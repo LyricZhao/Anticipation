@@ -12,13 +12,13 @@ struct Couple {
 
 Couple couples[24] = { // NOLINT(cert-err58-cpp)
         Couple(0, 1, "邢李沛沛 付洋"),
-        Couple(0, 0, "吴茜 廖帏宇"),
+        Couple(0, 0, "吴茜 廖帷宇"),
         Couple(1, 1, "胡梦琳 梁恩广"),
         Couple(1, 0, "郭旻坤 申函宁"),
         Couple(1, 0, "花佳诚 夏雨"),
         Couple(1, 0, "阴柯宇 吴若愚"),
         Couple(1, 1, "刘志恒 王续颖"),
-        Couple(0, 0, "冯源 李朔瑾"),
+        Couple(1, 0, "冯源 李朔瑾"),
         Couple(1, 2, "路超 龙江薇"),
         Couple(2, 1, "梁馨尹 金江禹"),
         Couple(1, 0, "伏开笛 刘佳璇"),
@@ -34,7 +34,7 @@ Couple couples[24] = { // NOLINT(cert-err58-cpp)
         Couple(2, 2, "许宜恒 何昀南"),
         Couple(2, 1, "何阳 周游"),
         Couple(1, 1, "郑凌翼 刘明宇"),
-        Couple(2, 1, "梁瑞琦 吴柯锌") // .1?
+        Couple(0, 1, "梁瑞琦 吴柯锌")
 };
 
 
@@ -56,6 +56,9 @@ int main() {
         if (std::popcount(group) != 12)
             continue;
         for (uint32_t skirt = 0; skirt < 4; ++ skirt) {
+            if ((skirt & 1) == (skirt >> 1))
+                continue;
+
             uint32_t selected_group_a = group ^ ((1u << 24u) - 1u);
             uint32_t selected_group_b = group;
             uint32_t selected_skirt_a = 0, selected_skirt_b = 0;
@@ -75,7 +78,7 @@ int main() {
             satisfied += std::popcount(selected_skirt_a & skirt_a);
             satisfied += std::popcount(selected_skirt_b & skirt_b);
 
-            if (satisfied > max)
+            if (satisfied >= max)
                 max = satisfied, answer_group = group, answer_skirt = skirt;
         }
     }
@@ -83,18 +86,19 @@ int main() {
     for (auto& couple: couples) {
         if (couple.group == 2)
             max += 2;
-        else if (couple.skirt == 2)
+        if (couple.skirt == 2)
             max += 1;
     }
-    std::cout << max << " (" << int(100.0 * max / 72.0) << "% satisfied), " << std::bitset<24>(answer_group) << ", " << std::bitset<2>(answer_skirt) << std::endl;
+    // std::cout << max << " (" << int(100.0 * max / 72.0) << "% satisfied), " << std::bitset<24>(answer_group) << ", " << std::bitset<2>(answer_skirt) << std::endl;
+    std::cout << "Optimal solution: " << int(100.0 * max / 72.0) << "% satisfied" << std::endl;
     for (int i = 0; i < 24; ++ i) {
         uint8_t selected_group = (answer_group >> i) & 1;
         uint8_t selected_skirt = (answer_skirt >> selected_group) & 1;
-        std::cout << " > " << couples[i].name << ": Group "
-                  << (selected_group == 0 ? "A" : "B")
-                  << " (satisfied=" << (selected_group == couples[i].group or couples[i].group == 2) << "), Skirt "
-                  << (selected_skirt == 0 ? "A" : "B")
-                  << " (satisfied=" << (selected_skirt == couples[i].skirt or couples[i].skirt == 2) << ")"
+        std::cout << " > " << couples[i].name
+                  << ": Group " << (selected_group == 0 ? "A" : "B")
+                  // << " (satisfied=" << (selected_group == couples[i].group or couples[i].group == 2) << ")"
+                  << ", Skirt " << (selected_skirt == 0 ? "A" : "B")
+                  // << " (satisfied=" << (selected_skirt == couples[i].skirt or couples[i].skirt == 2) << ")"
                   << std::endl;
     }
     return 0;
